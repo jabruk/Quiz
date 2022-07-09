@@ -2,63 +2,52 @@
 
 namespace Quiz\Controllers;
 
+use Laminas\Db\TableGateway\TableGateway;
+
 class Tasks
 {
     public function run()
     {
-        $db = \Quiz\Service\DB::get();
-        $stmt = $db->prepare("
-            SELECT  
-                *
-            FROM    
-                `tests`
-        ");
-
-        $stmt->execute();
+        $adapter = \Quiz\Service\DB::getAdapter();
+        $table = new TableGateway('tests',$adapter);
+        $stmt = $table->select();
+        $data = [];
+        foreach($stmt as $test){
+            $data [] = $test;
+        }
 
         $view = new \Quiz\View\Tasks();
         $view->render([
             'title' => 'Pass tests',
-            'data' => $stmt->fetchAll(),
+            'data' => $data,
         ]);
     }
 
     public function runStart()
     {
 
-        $db = \Quiz\Service\DB::get();
-        $stmt = $db->prepare("
-            SELECT
-                *
-            FROM    
-                `questions`
-            WHERE
-                `id_test` = :idt
-        ");
+        $adapter = \Quiz\Service\DB::getAdapter();
+        $table = new TableGateway('questions',$adapter);
+        $tableAns = new TableGateway('answers',$adapter);
+        $tableHistory = new TableGateway('test_history',$adapter);
 
-        $stmt->execute([
-            ':idt' => $_GET['id'],
-        ]);
+        $stmt = $table->select(['id_test' => $_GET['id']]);
+        
 
-        $question_array = $stmt->fetchAll();
+        $question_array = [];
+        foreach($stmt as $qw){
+            $question_array [] = $qw;
+        }
 
         $answer_array = [];
 
         foreach ($question_array as $question) {
-            $stmt = $db->prepare("
-                SELECT
-                    *
-                FROM    
-                    `answers`
-                WHERE
-                    `id_question` = :idq
-            ");
-
-            $stmt->execute([
-                ':idq' => $question['id'],
-            ]);
-
-            $answer_array[] = $stmt->fetchAll();
+            $stmt = $tableAns->select(['id_question' => $question['id']]);
+            $answers = [];
+            foreach($stmt as $qw){
+                $answers [] = $qw;
+            }
+            $answer_array[] = $answers;
         }
         if ($_POST) {
             $cnt = 0;
@@ -70,27 +59,8 @@ class Tasks
                         }
                     }
                 }
-                $stmt = $db->prepare("
-                    INSERT INTO
-                        `test_history` (
-                            `id_student`,
-                            `id_test`,
-                            `student_answers`,
-                            `score`
-                        ) VALUES (
-                            :ids,
-                            :idt,
-                            :sa,
-                            :score
-                        )   
-                ");
-
-                $stmt->execute([
-                    ':ids' => $_SESSION['auth']['id'],
-                    ':idt' => $_GET['id'],
-                    ':sa' => $_POST[$ans],
-                    ':score' => $cnt,
-                ]);
+                $tableHistory->insert(['id_student' => $_SESSION['auth']['id'],'id_test' => $_GET['id'],'student_answers' => $_POST[$ans],'score' =>$cnt]);
+                
             }
 
             header('Location: /tasks');

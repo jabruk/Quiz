@@ -75,10 +75,7 @@ class Tests
 
         $answer_array = $this->getAnswers();
 
-        // if($_POST){
-        //     var_dump($_POST);
-        //     die();
-        // }
+
 
         $validator = $this->getValidator(true);
             if ($_POST && $validator->check($_POST)) {
@@ -93,37 +90,11 @@ class Tests
                 if(substr($element,0,1) == 'a'){
                     $tableAns->update(['text_answer' => $def,'correct' => isset($_POST['c'.substr($element,1)]) ? 1 : 0],['id' => substr($element,1)]);
 
-                    /*$stmt = $adapter->prepare("
-                    
-                        UPDATE
-                            `answers`
-                        SET
-                            `text_answer` = :answer,
-                            `correct` = :is_correct
-                        WHERE
-                            `id` = :id
-                    ");
-                    $stmt->execute([
-                        ':answer' => $def,
-                        ':id' => substr($element,1),
-                        ':is_correct' => isset($_POST['c'.substr($element,1)]) ? 1 : 0,
-                    ]);*/
+                  
                 } elseif(substr($element,0,1) == 'q') {
                     $tableQt->update(['text_question' => $def],['id' => substr($element,1)]);
 
-                    /*$stmt = $adapter->prepare("
                     
-                        UPDATE
-                            `questions`
-                        SET
-                            `text_question` = :question
-                        WHERE
-                            `id` = :id
-                    ");
-                    $stmt->execute([
-                        ':question' => $def,
-                        ':id' => substr($element,1),
-                    ]);*/
                 }
             }
 
@@ -131,8 +102,7 @@ class Tests
             return;
         }
 
-        // var_dump($question_array);
-        // die();
+        
 
         $view = new \Quiz\View\Tests\UpdateForm();
         $view->render([
@@ -154,23 +124,7 @@ class Tests
         if(isset($_GET)){
         $table->insert(['id_test' => intval($_GET['id']),'text_question' => '']);
             
-            /*$stmt = $pdo->prepare("
-            INSERT INTO
-                    `questions` (
-                        `id_test`,
-                        `text_question`
-                    ) VALUES (
-                        :idt,
-                        :tq
-                    )
-            ");
-            $stmt->execute([
-                ':idt' => intval($_GET['id']),
-                ':tq' => '',
-
-
-
-            ]);*/
+            
             
         header('Location: /tests/update?id='.$_SESSION['test_id']);
             
@@ -199,18 +153,10 @@ class Tests
         if(isset($_GET)){
             $table->delete(['id' => $_GET['id']]);
 
-            /*$stmt = $table->prepare("DELETE FROM `questions` WHERE `id` = :idq");
-            $stmt->execute([
-                ':idq' => $_GET['id'],
-
-            ]);*/
-            $tableAns->delete(['id_question' => $_GET['id']]);
             
-            /*$stmt = $tableAns->prepare("DELETE FROM `answers` WHERE `id_question` = :idq");
-            $stmt->execute([
-                ':idq' => $_GET['id'],
-
-            ]);*/
+            $tableAns->delete(['id_question ' => $_GET['id']]);
+            
+            
             
             $view = new \Quiz\View\Tests\UpdateForm();
             header('Location: /tests/update?id='.$_SESSION['test_id']);
@@ -236,11 +182,7 @@ class Tests
         if(isset($_GET)){
             $table->delete(['id' => $_GET['id']]);
 
-            /*$stmt = $pdo->prepare("DELETE FROM `answers` WHERE `id` = :ida ");
-            $stmt->execute([
-                ':ida' => $_GET['id'],
-
-            ]);*/
+            
             
             
         $view = new \Quiz\View\Tests\UpdateForm();
@@ -266,26 +208,7 @@ class Tests
 
         if(isset($_GET)){
             $table->insert(['id_question' => intval($_GET['id']),'text_answer' => '','correct' => 0 ]);
-            /*$stmt = $pdo->prepare("
-                INSERT INTO
-                    `answers` (
-                        `id_question`,
-                        `text_answer`,
-                        `correct`
-                    ) VALUES (
-                        :idq,
-                        :ta,
-                        :ic
-                    )
-                ");
-            $stmt->execute([
-                ':idq' => intval($_GET['id']),
-                ':ta' => '',
-                ':ic' => 0,
-
-
-
-            ]);*/
+            
             
         header('Location: /tests/update?id='.$_SESSION['test_id']);
             
@@ -315,14 +238,10 @@ class Tests
 
 
         if (isset($_POST['id'])) {
-            // foreach()
+            
 
             $stmt = $table->select(['id' => $_POST['id']]);
-            /*$stmt = $pdo->prepare("SELECT `id` FROM `questions` WHERE `id_test` = :idt ");
-            $stmt->execute([
-                ':idt' => $_POST['id'],
-
-            ]);*/
+            
             $arrayOfIdQuestions = [];
             foreach($stmt->current as $qst){
                 $arrayOfIdQuestions [] = $qst;
@@ -332,27 +251,17 @@ class Tests
 
                 foreach ($qstn as $id) {
                     $tableAns->delete(['id_question' => $id]);
-                    /*$stmt = $pdo->prepare("DELETE FROM `answers` WHERE `id_question` = :idq ");
-                    $stmt->execute([
-                        ':idq' => $id,
-                    ]);*/
+                    
                 }
             }
 
             foreach ($arrayOfIdQuestions as $qstn) {
                 $table->delete(['id' => $qstn['id']]);
 
-                /*$stmt = $pdo->prepare("DELETE FROM `questions` WHERE `id` = :id ");
-                $stmt->execute([
-                    ':id' => $qstn['id'],
-                ]);*/
             }
 
             $tableTest->delete(['id' => $_POST['id']]);
-            /*$stmt->prepare("DELETE FROM `tests` WHERE `id` = :id ");
-            $stmt->execute([
-                ':id' => $_POST['id'],
-            ]);*/
+            
 
             header('Location: /tests');
             return;
@@ -364,19 +273,7 @@ class Tests
         }
 
         $stmt = $tableTest->select(['id' => $_GET['id']]);
-        /*$stmt = $pdo->prepare("
-            SELECT
-                *
-            FROM
-                `tests`
-            WHERE
-                `id` = :idt
         
-        ");
-
-        $stmt->execute([
-            ':idt' => $_GET['id'],
-        ]);*/
         $test = [];
         foreach($stmt->current() as $test){
             $test [] = $test;

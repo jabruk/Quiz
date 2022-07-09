@@ -2,57 +2,35 @@
 
 namespace Quiz\Controllers;
 
+use Laminas\Db\TableGateway\TableGateway;
+
 class Users 
 {
     public function run()
     {
-        $db = \Quiz\Service\DB::get();
-        $stmt = $db->prepare("
-            SELECT  
-                *
-            FROM    
-                `users`
-            WHERE 
-                `privilege` = :privilege 
-        ");
-
-        $stmt->execute([
-            ':privilege' => 0
-        ]);
+        $adapter = \Quiz\Service\DB::get();
+        $table = new TableGateway('users',$adapter);
+        $stmt = $table->select(['privilege' => 0]);
+        $data = [];
+        foreach($stmt as $user){
+            $data [] = $user;
+        }
 
         $view = new \Quiz\View\Users();
         $view->render([
             'title' => 'Users',
-            'data' => $stmt->fetchAll(),
+            'data' => $data,
         ]);
     }
 
     public function runAdd()
     {
+        $adapter = \Quiz\Service\DB::getAdapter();
         $validator = $this->getValidator();
         if($_POST && $validator->check($_POST)){ 
-            $db = \Quiz\Service\DB::get();
-            $stmt = $db->prepare("
-                INSERT INTO
-                    `users` (
-                        `email`,
-                        `name`,
-                        `password`,
-                        `privilege`
-                    ) VALUES (
-                        :email,
-                        :name,
-                        :password,
-                        :privilege
-                    )
-            ");         
-
-            $stmt->execute([
-                ':email' => $_POST['email'],
-                ':name' => $_POST['name'],
-                ':password' => sha1($_POST['password']),
-                ':privilege' => $_POST['privilege'],
-            ]);   
+            $table = new TableGateway('users',$adapter);
+            $table->insert(['email' => $_POST['email'], 'name' => $_POST['name'],'password' => sha1($_POST['password']), 'privilege' => $_POST['privilege']]);
+          
             header('Location: /users');
             return;
         }

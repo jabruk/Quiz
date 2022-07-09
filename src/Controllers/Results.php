@@ -2,11 +2,16 @@
 
 namespace Quiz\Controllers;
 
+use Laminas\Db\TableGateway\TableGateway;
+
 class Results 
 {
     public function run()
     {
-        $db = \Quiz\Service\DB::get();
+        $adapter = \Quiz\Service\DB::getAdapter();
+        $table = new TableGateway(['tests','test_history'],$adapter);
+        die();
+        $table->select();
         $stmt = $db->prepare("
             SELECT  
                 `tests`.*,

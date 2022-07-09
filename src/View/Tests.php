@@ -6,7 +6,7 @@ class Tests extends Main
 {
     public function content(array $data)
     {
-
+        
         ?>
             <div class="row">
                 <div class="col-lg-12">

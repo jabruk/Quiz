@@ -7,10 +7,10 @@ class UpdateForm extends \Quiz\View\Main
     public function content(array $data)
     {
 
-        //var_dump($data);
+        // var_dump($data);
         //die();
         $_SESSION['test_id'] = $_GET['id'];
-        //var_dump($_SESSION);
+        // var_dump($_SESSION);
 ?>
 
         <div class="row">
@@ -59,17 +59,16 @@ class UpdateForm extends \Quiz\View\Main
                                             <div class="help-block"><?= $data['messages']['q' . $array['id']] ?></div>
                                         <?php endif; ?>
                                         <?php foreach ($data['answers'] as $ans) : ?>
-                                            <?php foreach ($ans as $text_ans) : ?>
-                                                <?php if ($text_ans['id_question'] == $array['id']) :  ?>
+                                                <?php if ($ans['id_question'] == $array['id']) :  ?>
                                                     <div class="checkbox">
-                                                        <label for=<?= $text_ans['id'] ?>>
+                                                        <label for=<?= $ans['id'] ?>>
                                                             <div style="display: flex; 
                                                             justify-content: 'flex-start';
                                                             align-items: center;
                                                             ">
-                                                                <input type="checkbox" id=<?= $text_ans['id'] ?> name=<?= 'c' . $text_ans['id'] ?> <?= $text_ans['correct'] == 1 ? 'checked' : '' ?>>
-                                                                <input type="text" class="form-control" id=<?= $text_ans['id'] ?> name=<?= 'a' . $text_ans['id'] ?> value=<?= $text_ans['text_answer'] ?>>
-                                                                <a href="/tests/delete/answer?id=<?= $text_ans['id'] ?>"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="30px" height="30px">
+                                                                <input type="checkbox" id=<?= $ans['id'] ?> name=<?= 'c' . $ans['id'] ?> <?= $ans['correct'] == 1 ? 'checked' : '' ?>>
+                                                                <input type="text" class="form-control" id=<?= $ans['id'] ?> name=<?= 'a' . $ans['id'] ?> value=<?= $ans['text_answer'] ?>>
+                                                                <a href="/tests/delete/answer?id=<?= $ans['id'] ?>"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="30px" height="30px">
                                                                         <path fill="#f37e98" d="M25,30l3.645,47.383C28.845,79.988,31.017,82,33.63,82h32.74c2.613,0,4.785-2.012,4.985-4.617L75,30" />
                                                                         <path fill="#f15b6c" d="M65 38v35c0 1.65-1.35 3-3 3s-3-1.35-3-3V38c0-1.65 1.35-3 3-3S65 36.35 65 38zM53 38v35c0 1.65-1.35 3-3 3s-3-1.35-3-3V38c0-1.65 1.35-3 3-3S53 36.35 53 38zM41 38v35c0 1.65-1.35 3-3 3s-3-1.35-3-3V38c0-1.65 1.35-3 3-3S41 36.35 41 38zM77 24h-4l-1.835-3.058C70.442 19.737 69.14 19 67.735 19h-35.47c-1.405 0-2.707.737-3.43 1.942L27 24h-4c-1.657 0-3 1.343-3 3s1.343 3 3 3h54c1.657 0 3-1.343 3-3S78.657 24 77 24z" />
                                                                         <path fill="#1f212b" d="M66.37 83H33.63c-3.116 0-5.744-2.434-5.982-5.54l-3.645-47.383 1.994-.154 3.645 47.384C29.801 79.378 31.553 81 33.63 81H66.37c2.077 0 3.829-1.622 3.988-3.692l3.645-47.385 1.994.154-3.645 47.384C72.113 80.566 69.485 83 66.37 83zM56 20c-.552 0-1-.447-1-1v-3c0-.552-.449-1-1-1h-8c-.551 0-1 .448-1 1v3c0 .553-.448 1-1 1s-1-.447-1-1v-3c0-1.654 1.346-3 3-3h8c1.654 0 3 1.346 3 3v3C57 19.553 56.552 20 56 20z" />
@@ -78,14 +77,13 @@ class UpdateForm extends \Quiz\View\Main
                                                                         <path fill="#1f212b" d="M59.5 45c-.276 0-.5-.224-.5-.5v-2c0-.276.224-.5.5-.5s.5.224.5.5v2C60 44.776 59.776 45 59.5 45zM38 76c-1.654 0-3-1.346-3-3V38c0-1.654 1.346-3 3-3s3 1.346 3 3v35C41 74.654 39.654 76 38 76zM38 36c-1.103 0-2 .897-2 2v35c0 1.103.897 2 2 2s2-.897 2-2V38C40 36.897 39.103 36 38 36z" />
                                                                     </svg></a>
                                                             </div>
-                                                            <?php if (isset($data['messages']['a' . $text_ans['id']])) : ?>
-                                                                <div class="help-block"><?= $data['messages']['a' . $text_ans['id']] ?></div>
+                                                            <?php if (isset($data['messages']['a' . $ans['id']])) : ?>
+                                                                <div class="help-block"><?= $data['messages']['a' . $ans['id']] ?></div>
                                                             <?php endif; ?>
                                                         </label>
                                                     </div>
                                                 <?php endif; ?>
                                             <?php endforeach; ?>
-                                        <?php endforeach; ?>
                                     </div>
                                 <?php endforeach; ?>
                             </div>

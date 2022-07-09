@@ -15,6 +15,11 @@ class ComposerStaticInita68372d2de6db3ac1d7b4dba4e3b436d
         array (
             'Quiz\\' => 5,
         ),
+        'L' => 
+        array (
+            'Laminas\\Stdlib\\' => 15,
+            'Laminas\\Db\\' => 11,
+        ),
         'F' => 
         array (
             'FastRoute\\' => 10,
@@ -25,6 +30,14 @@ class ComposerStaticInita68372d2de6db3ac1d7b4dba4e3b436d
         'Quiz\\' => 
         array (
             0 => __DIR__ . '/../..' . '/src',
+        ),
+        'Laminas\\Stdlib\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/laminas/laminas-stdlib/src',
+        ),
+        'Laminas\\Db\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/laminas/laminas-db/src',
         ),
         'FastRoute\\' => 
         array (

@@ -7,5 +7,7 @@ $baseDir = dirname($vendorDir);
 
 return array(
     'Quiz\\' => array($baseDir . '/src'),
+    'Laminas\\Stdlib\\' => array($vendorDir . '/laminas/laminas-stdlib/src'),
+    'Laminas\\Db\\' => array($vendorDir . '/laminas/laminas-db/src'),
     'FastRoute\\' => array($vendorDir . '/nikic/fast-route/src'),
 );

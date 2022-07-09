@@ -2,24 +2,26 @@
 
 namespace Quiz\Controllers;
 
+use Laminas\Db\TableGateway\TableGateway;
+
 class Tests
 {
-    public function run()
-    {
-        $db = \Quiz\Service\DB::get();
-        $stmt = $db->prepare("
-            SELECT  
-                *
-            FROM    
-                `tests`
-        ");
+    
 
-        $stmt->execute();
+    public function run()
+    {   $adapter = \Quiz\Service\DB::getAdapter();
+        $table = new TableGateway('tests', $adapter);
+        $stmt = $table->select();
+
+        $data = [];
+        foreach($stmt as $current){
+            $data [] = (array)$current;
+        }
 
         $view = new \Quiz\View\Tests();
         $view->render([
             'title' => 'Tests',
-            'data' => $stmt->fetchAll(),
+            'data' => $data,
         ]);
     }
 
@@ -29,35 +31,17 @@ class Tests
 
         if ($_POST && $validator->check($_POST)) {
 
-            $db = \Quiz\Service\DB::get();
-            $stmt = $db->prepare("
-                INSERT INTO
-                    `tests` (
-                        `name`
-                    ) VALUES (
-                        :name
-                    )
-            ");
-
-            $stmt->execute([
-                ':name' => $_POST['name'],
-            ]);
-
-            $stmt = $db->prepare("
-                SELECT
-                    *
-                FROM
-                    `tests`
-                WHERE
-                    `name` = :name
-            ");
-
-            $stmt->execute([
-                ':name' => $_POST['name'],
-            ]);
+            $adapter = \Quiz\Service\DB::getAdapter();
+            $table = new TableGateway('tests', $adapter);
+            $stmt = $table->insert(['name' => $_POST['name']]);
+            
+            $table = new TableGateway('tests', $adapter);
+            $stmt = $table->select(['name' => $_POST['name']]);
 
 
-            $_SESSION['test_info'] = $stmt->fetch();
+
+
+            $_SESSION['test_info'] = (array)$stmt->current();
 
 
             header('Location: /tests/questions');
@@ -85,8 +69,8 @@ class Tests
 
 
 
-        $db = \Quiz\Service\DB::get();
-
+        $adapter = \Quiz\Service\DB::getAdapter();
+        
         $question_array = $this->getQuestions();
 
         $answer_array = $this->getAnswers();
@@ -97,27 +81,19 @@ class Tests
         // }
 
         $validator = $this->getValidator(true);
-        if ($_POST && $validator->check($_POST)) {
+            if ($_POST && $validator->check($_POST)) {
+
+            $table = new TableGateway('tests', $adapter);
+            $tableAns = new TableGateway('answers', $adapter);
+            $tableQt = new TableGateway('questions', $adapter);
+            $table->update(['name' => $_POST['name'],'id' => $_GET['id']]);
 
             
-            $stmt = $db->prepare("
-                UPDATE
-                    `tests`
-                SET
-                    `name` = :name
-                WHERE
-                    `id` = :id
-                    
-            ");
-            $stmt->execute([
-                ':name' => $_POST['name'],
-                ':id' => $_GET['id'],
-            ]);
-
             foreach($_POST as $element => $def){
                 if(substr($element,0,1) == 'a'){
+                    $tableAns->update(['text_answer' => $def,'correct' => isset($_POST['c'.substr($element,1)]) ? 1 : 0],['id' => substr($element,1)]);
 
-                    $stmt = $db->prepare("
+                    /*$stmt = $adapter->prepare("
                     
                         UPDATE
                             `answers`
@@ -131,9 +107,11 @@ class Tests
                         ':answer' => $def,
                         ':id' => substr($element,1),
                         ':is_correct' => isset($_POST['c'.substr($element,1)]) ? 1 : 0,
-                    ]);
+                    ]);*/
                 } elseif(substr($element,0,1) == 'q') {
-                    $stmt = $db->prepare("
+                    $tableQt->update(['text_question' => $def],['id' => substr($element,1)]);
+
+                    /*$stmt = $adapter->prepare("
                     
                         UPDATE
                             `questions`
@@ -145,7 +123,7 @@ class Tests
                     $stmt->execute([
                         ':question' => $def,
                         ':id' => substr($element,1),
-                    ]);
+                    ]);*/
                 }
             }
 
@@ -153,7 +131,8 @@ class Tests
             return;
         }
 
-
+        // var_dump($question_array);
+        // die();
 
         $view = new \Quiz\View\Tests\UpdateForm();
         $view->render([
@@ -168,11 +147,14 @@ class Tests
 
 
     public function runAddQuestion(){
-        $pdo = \Quiz\Service\DB::get();
+        $adapter = \Quiz\Service\DB::getAdapter();
+        $table = new TableGateway('questions', $adapter);
+
 
         if(isset($_GET)){
+        $table->insert(['id_test' => intval($_GET['id']),'text_question' => '']);
             
-            $stmt = $pdo->prepare("
+            /*$stmt = $pdo->prepare("
             INSERT INTO
                     `questions` (
                         `id_test`,
@@ -188,7 +170,7 @@ class Tests
 
 
 
-            ]);
+            ]);*/
             
         header('Location: /tests/update?id='.$_SESSION['test_id']);
             
@@ -208,19 +190,27 @@ class Tests
     }
 
     public function runDeleteQuestion(){
-        $pdo = \Quiz\Service\DB::get();
+        $adapter = \Quiz\Service\DB::getAdapter();
+        
+        $table = new TableGateway('questions', $adapter);
+        $tableAns = new TableGateway('answers', $adapter);
+        $adapter = \Quiz\Service\DB::getAdapter();
 
         if(isset($_GET)){
-            $stmt = $pdo->prepare("DELETE FROM `questions` WHERE `id` = :idq");
+            $table->delete(['id' => $_GET['id']]);
+
+            /*$stmt = $table->prepare("DELETE FROM `questions` WHERE `id` = :idq");
             $stmt->execute([
                 ':idq' => $_GET['id'],
 
-            ]);
-            $stmt = $pdo->prepare("DELETE FROM `answers` WHERE `id_question` = :idq");
+            ]);*/
+            $tableAns->delete(['id_question' => $_GET['id']]);
+            
+            /*$stmt = $tableAns->prepare("DELETE FROM `answers` WHERE `id_question` = :idq");
             $stmt->execute([
                 ':idq' => $_GET['id'],
 
-            ]);
+            ]);*/
             
             $view = new \Quiz\View\Tests\UpdateForm();
             header('Location: /tests/update?id='.$_SESSION['test_id']);
@@ -239,15 +229,18 @@ class Tests
 
 
     public function runDeleteAnswer(){
-        $pdo = \Quiz\Service\DB::get();
+        $adapter = \Quiz\Service\DB::getAdapter();
+        
+        $table = new TableGateway('answers', $adapter);
 
         if(isset($_GET)){
-            
-            $stmt = $pdo->prepare("DELETE FROM `answers` WHERE `id` = :ida ");
+            $table->delete(['id' => $_GET['id']]);
+
+            /*$stmt = $pdo->prepare("DELETE FROM `answers` WHERE `id` = :ida ");
             $stmt->execute([
                 ':ida' => $_GET['id'],
 
-            ]);
+            ]);*/
             
             
         $view = new \Quiz\View\Tests\UpdateForm();
@@ -266,12 +259,15 @@ class Tests
     }
 
     public function runAddAnswer(){
-        $pdo = \Quiz\Service\DB::get();
+        $adapter = \Quiz\Service\DB::getAdapter();
+        
+        $table = new TableGateway('answers', $adapter);
+
 
         if(isset($_GET)){
-            
-            $stmt = $pdo->prepare("
-            INSERT INTO
+            $table->insert(['id_question' => intval($_GET['id']),'text_answer' => '','correct' => 0 ]);
+            /*$stmt = $pdo->prepare("
+                INSERT INTO
                     `answers` (
                         `id_question`,
                         `text_answer`,
@@ -281,7 +277,7 @@ class Tests
                         :ta,
                         :ic
                     )
-            ");
+                ");
             $stmt->execute([
                 ':idq' => intval($_GET['id']),
                 ':ta' => '',
@@ -289,7 +285,7 @@ class Tests
 
 
 
-            ]);
+            ]);*/
             
         header('Location: /tests/update?id='.$_SESSION['test_id']);
             
@@ -311,43 +307,52 @@ class Tests
     public function runDelete()
     {
 
-        $pdo = \Quiz\Service\DB::get();
+        $adapter = \Quiz\Service\DB::getAdapter();
+        $table = new TableGateway('questions', $adapter);
+        $tableAns = new TableGateway('answers', $adapter);
+        $tableTest = new TableGateway('tests', $adapter);
+
+
 
         if (isset($_POST['id'])) {
             // foreach()
 
-
-            $stmt = $pdo->prepare("SELECT `id` FROM `questions` WHERE `id_test` = :idt ");
+            $stmt = $table->select(['id' => $_POST['id']]);
+            /*$stmt = $pdo->prepare("SELECT `id` FROM `questions` WHERE `id_test` = :idt ");
             $stmt->execute([
                 ':idt' => $_POST['id'],
 
-            ]);
-
-            $arrayOfIdQuestions = $stmt->fetchAll();
-
+            ]);*/
+            $arrayOfIdQuestions = [];
+            foreach($stmt->current as $qst){
+                $arrayOfIdQuestions [] = $qst;
+            }
 
             foreach ($arrayOfIdQuestions as $qstn) {
 
                 foreach ($qstn as $id) {
-                    $stmt = $pdo->prepare("DELETE FROM `answers` WHERE `id_question` = :idq ");
+                    $tableAns->delete(['id_question' => $id]);
+                    /*$stmt = $pdo->prepare("DELETE FROM `answers` WHERE `id_question` = :idq ");
                     $stmt->execute([
                         ':idq' => $id,
-                    ]);
+                    ]);*/
                 }
             }
 
             foreach ($arrayOfIdQuestions as $qstn) {
+                $table->delete(['id' => $qstn['id']]);
 
-                $stmt = $pdo->prepare("DELETE FROM `questions` WHERE `id` = :id ");
+                /*$stmt = $pdo->prepare("DELETE FROM `questions` WHERE `id` = :id ");
                 $stmt->execute([
                     ':id' => $qstn['id'],
-                ]);
+                ]);*/
             }
 
-            $stmt = $pdo->prepare("DELETE FROM `tests` WHERE `id` = :id ");
+            $tableTest->delete(['id' => $_POST['id']]);
+            /*$stmt->prepare("DELETE FROM `tests` WHERE `id` = :id ");
             $stmt->execute([
                 ':id' => $_POST['id'],
-            ]);
+            ]);*/
 
             header('Location: /tests');
             return;
@@ -358,8 +363,8 @@ class Tests
             return;
         }
 
-
-        $stmt = $pdo->prepare("
+        $stmt = $tableTest->select(['id' => $_GET['id']]);
+        /*$stmt = $pdo->prepare("
             SELECT
                 *
             FROM
@@ -371,9 +376,12 @@ class Tests
 
         $stmt->execute([
             ':idt' => $_GET['id'],
-        ]);
-
-        if (!$test = $stmt->fetch()) {
+        ]);*/
+        $test = [];
+        foreach($stmt->current() as $test){
+            $test [] = $test;
+        }
+        if (!$test) {
             header('Location: /tests');
             return;
         }
@@ -395,10 +403,64 @@ class Tests
 
 
 
+    
+
+    private function getQuestions($id = '')
+    {
+        $adapter = \Quiz\Service\DB::getAdapter();
+
+        $table = new TableGateway('questions', $adapter);
+        $id = ($id == '' ? intval( $_GET['id']) : $id);
+
+
+        $stmt = $table->select(['id_test' => $id]);
+
+        $questions  = [];
+        foreach($stmt as $row){
+            $questions [] = (array)$row;
+        }
+
+
+
+
+
+        return $questions;
+    }
+
+    private function getAnswers()
+    {
+        $adapter = \Quiz\Service\DB::getAdapter();
+
+        $answer_array = [];
+        $table = new TableGateway('answers', $adapter);
+        $stmt = $table->select();
+
+        foreach($stmt as $row){
+            $answer_array [] = (array)$row;
+        }
+        return $answer_array;
+    }
+
+    private function getTestName($id = '')
+    {
+        
+        $adapter = \Quiz\Service\DB::getAdapter();
+        $table = new TableGateway('tests', $adapter);
+        $stmt = $table->select(['id' => $id == '' ? intval( $_GET['id']) : $id]);
+        
+        $test  = [];
+        foreach($stmt as $row){
+            $test [] = (array)$row;
+        }
+
+
+        return $test;
+    }
+
     private function getValidator($isUpdate = false)
     {
         $validator = new \Quiz\Service\Validator();
-        $db = \Quiz\Service\DB::get();
+        $adapter = \Quiz\Service\DB::getAdapter();
         foreach ($_POST as $id => $def) {
 
 
@@ -419,71 +481,5 @@ class Tests
 
 
         return $validator;
-    }
-
-    private function getQuestions($id = '')
-    {
-        $db = \Quiz\Service\DB::get();
-
-        $stmt = $db->prepare("
-            SELECT
-                *
-            FROM    
-                `questions`
-            WHERE
-                `id_test` = :idt
-        ");
-
-        $stmt->execute([
-            ':idt' => $id == '' ? intval( $_GET['id']) : $id,
-        ]);
-
-
-
-        return $stmt->fetchAll();
-    }
-
-    private function getAnswers()
-    {
-        $db = \Quiz\Service\DB::get();
-
-        $answer_array = [];
-        $stmt = $db->prepare("
-                SELECT
-                    *
-                FROM    
-                    `answers`
-               
-            ");
-
-        $stmt->execute([]);
-
-        $answer_array[] = $stmt->fetchAll();
-        return $answer_array;
-    }
-
-    private function getTestName($id = '')
-    {
-
-        $db = \Quiz\Service\DB::get();
-
-        $stmt = $db->prepare("
-            SELECT
-                `name`
-            FROM    
-                `tests`
-            WHERE
-                `id` = :idt
-        ");
-
-        $stmt->execute([
-            ':idt' => $id == '' ? intval( $_GET['id']) : $id,
-
-        ]);
-
-
-
-
-        return $stmt->fetchAll();
     }
 }

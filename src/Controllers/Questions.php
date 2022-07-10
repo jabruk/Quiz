@@ -13,7 +13,7 @@ class Questions
         
         $adapter = \Quiz\Service\DB::getAdapter();
         
-        if($_POST){
+        if($_POST && $this->getValidator()->check($_POST)){
 
 
 
@@ -43,6 +43,7 @@ class Questions
         $view->render([
             'title' => 'Create a question',
             'name' => $_SESSION['test_info']['name'],
+            'messages' => $this->getValidator()->getMessages(),
         ]);
     }
     
@@ -51,23 +52,18 @@ class Questions
 
     private function getValidator() 
     {
+ 
         $validator = new \Quiz\Service\Validator();
         $validator->setRule('name', function($value){
-            $db = \Quiz\Service\DB::getAdapter();
-            $stmt = $db->prepare("
-                SELECT  
-                    *
-                FROM    
-                    `tests`
-                WHERE
-                    `name` = :name
-            ");
+            $adapter = \Quiz\Service\DB::getAdapter();
+            $table = new TableGateway('tests', $adapter);
+            $stmt = $table->select(['name' => $value]);
 
-            $stmt->execute([
-                ':name' => $value
-            ]);
-
-            if($test = $stmt->fetch()){
+            $test = [];
+            foreach($stmt as $t){
+                $test [] = $t;
+            }
+            if($test ){
                 return false;
             }
             else {
@@ -77,18 +73,5 @@ class Questions
         return $validator;
     }
     
-    private function getUserAccounts()
-    {
-        $db = \Quiz\Service\DB::getAdapter();
-        $stmt = $db->prepare("
-            SELECT  
-                *
-            FROM    
-                `tests`
-        ");
-
-        $stmt->execute([]);
-        
-        return $stmt->fetchAll();
-    }
+    
 }

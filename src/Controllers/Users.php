@@ -8,7 +8,7 @@ class Users
 {
     public function run()
     {
-        $adapter = \Quiz\Service\DB::get();
+        $adapter = \Quiz\Service\DB::getAdapter();
         $table = new TableGateway('users',$adapter);
         $stmt = $table->select(['privilege' => 0]);
         $data = [];

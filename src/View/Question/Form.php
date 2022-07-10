@@ -7,6 +7,7 @@ class Form extends \Quiz\View\Main
     public function content(array $data = [])
     {
         $isNew = !isset($data['data']['name']);
+        var_dump($data);
         ?>
         <div class="row">
             <div class="col-lg-12">

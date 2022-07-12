@@ -38,7 +38,6 @@ class Tasks
         
         $result = $table->select(function(Select $select){
 
-            $select = 
             $select
                     ->where(['id_test' => $_GET['id']])
                     ->join(['a' => 'answers'] , 'a.id_question = questions.id',array('text_answer','correct','id_t' => 'id'),'left');

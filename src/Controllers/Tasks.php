@@ -28,8 +28,7 @@ class Tasks
     {
 
         $adapter = \Quiz\Service\DB::getAdapter();
-        $table = new TableGateway('questions',$adapter);
-        $tableAns = new TableGateway('answers',$adapter);
+
         $tableHistory = new TableGateway('test_history',$adapter);
 
 

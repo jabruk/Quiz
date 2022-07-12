@@ -6,6 +6,7 @@ class Form extends \Quiz\View\Main
 {
     public function content(array $data)
     {
+        //var_dump($data['questions']); die();
         ?>
         <div class="row">
             <div class="col-lg-12">
@@ -17,15 +18,14 @@ class Form extends \Quiz\View\Main
                                     <label class="col-sm-9"><?=$array['text_question'] ?></label>
                                         <div class="col-sm-9">
                                             <?php foreach($data['answers'] as $ans ) : ?>
-                                                <?php foreach($ans as $text_ans) : ?>
-                                                    <?php if($text_ans['id_question'] != $array['id']) break;  ?>
+                                                    <?php if($ans['id_question'] === $array['id']):  ?>
                                                     <div class="checkbox">
-                                                        <label for=<?=$text_ans['id'] ?>>
-                                                            <input type="checkbox" id=<?=$text_ans['id']?> name=<?='example-checkbox'.$text_ans['id'] ?> value=<?="a".$text_ans['id']?>> <?= $text_ans['text_answer'] ?>
+                                                        <label for=<?=$ans['id_t'] ?>>
+                                                            <input type="checkbox" id=<?=$ans['id_t']?> name=<?='example-checkbox'.$ans['id_t'] ?> value=<?="a".$ans['id_t']?>> <?= $ans['text_answer'] ?>
                                                         </label>
                                                     </div>
+                                                    <?php endif; ?>
                                                     <?php endforeach; ?>
-                                            <?php endforeach; ?>
                                         </div>
                                 <?php endforeach; ?>
                             </div>

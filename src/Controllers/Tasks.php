@@ -2,6 +2,7 @@
 
 namespace Quiz\Controllers;
 
+use Laminas\Db\Sql\Sql;
 use Laminas\Db\TableGateway\TableGateway;
 
 class Tasks
@@ -31,11 +32,44 @@ class Tasks
         $tableAns = new TableGateway('answers',$adapter);
         $tableHistory = new TableGateway('test_history',$adapter);
 
-        $stmt = $table->select(['id_test' => $_GET['id']]);
+
+        $sql = new Sql($adapter);
+        $select = $sql->select();
+        $select
+                ->from(['q' => 'questions'])
+                ->where(['id_test' => $_GET['id']])
+                ->join(['a' => 'answers'] , 'a.id_question = q.id',array('text_answer','correct','id_t' => 'id'),'left');
+       
+
+        $stmt = $sql->prepareStatementForSqlObject($select);
+        $result = $stmt->execute();
+
+        $answer_array = [];
+        $question_array = [];
+        $text_q = '';
+        foreach($result as $res){
+            if($text_q !== $res['text_question']){    
+                $question_array [] = [
+                    'id' => $res['id'],
+                    'id_test' => $res['id_test'],
+                    'text_question' => $res['text_question']
+                ];
+            }
+            $answer_array [] = [
+                'text_answer' => $res['text_answer'],
+                'correct' => $res['correct'] ,
+                'id_question' => $res['id'],
+                'id_t' => $res['id_t']
+            ];
+            $text_q = $res['text_question'];
+        }
+
+        //var_dump($question_array);die();
+        //$stmt = $table->select(['id_test' => $_GET['id']]);
         
 
-        $question_array = [];
-        foreach($stmt as $qw){
+        
+        /*foreach($stmt as $qw){
             $question_array [] = $qw;
         }
 
@@ -48,16 +82,15 @@ class Tasks
                 $answers [] = $qw;
             }
             $answer_array[] = $answers;
-        }
+        }*/
         if ($_POST) {
             $cnt = 0;
             foreach ($_POST as $ans => $def) {
-                foreach ($answer_array as $ans_arr) {
-                    foreach ($ans_arr as $correct) {
-                        if (substr($def, 1) == $correct['id'] && $correct['correct'] === 1) {
+                foreach ($answer_array as $correct) {
+                        if (substr($def, 1) == $correct['id_t'] && $correct['correct'] === 1) {
                             $cnt++;
                         }
-                    }
+                    
                 }
                 $tableHistory->insert(['id_student' => $_SESSION['auth']['id'],'id_test' => $_GET['id'],'student_answers' => $_POST[$ans],'score' =>$cnt]);
                 

@@ -40,7 +40,7 @@ class Tasks
 
             $select
                     ->where(['id_test' => $_GET['id']])
-                    ->join(['a' => 'answers'] , 'a.id_question = questions.id',array('text_answer','correct','id_t' => 'id'),'left');
+                    ->join(['a' => 'answers'] , 'a.id_question = questions.id',['text_answer','correct','id_t' => 'id'],'left');
            
         });
         //$stmt = $sql->prepareStatementForSqlObject($select);

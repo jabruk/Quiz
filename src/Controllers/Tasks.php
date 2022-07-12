@@ -64,25 +64,6 @@ class Tasks
             $text_q = $res['text_question'];
         }
 
-        //var_dump($question_array);die();
-        //$stmt = $table->select(['id_test' => $_GET['id']]);
-        
-
-        
-        /*foreach($stmt as $qw){
-            $question_array [] = $qw;
-        }
-
-        $answer_array = [];
-
-        foreach ($question_array as $question) {
-            $stmt = $tableAns->select(['id_question' => $question['id']]);
-            $answers = [];
-            foreach($stmt as $qw){
-                $answers [] = $qw;
-            }
-            $answer_array[] = $answers;
-        }*/
         if ($_POST) {
             $cnt = 0;
             foreach ($_POST as $ans => $def) {

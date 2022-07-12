@@ -2,7 +2,9 @@
 
 namespace Quiz\Controllers;
 
+use Laminas\Db\Sql\Select;
 use Laminas\Db\Sql\Sql;
+use Laminas\Db\TableGateway\Feature\EventFeature\TableGatewayEvent;
 use Laminas\Db\TableGateway\TableGateway;
 
 class Tasks
@@ -28,20 +30,21 @@ class Tasks
     {
 
         $adapter = \Quiz\Service\DB::getAdapter();
-
+        $table = new TableGateway('questions', $adapter);
         $tableHistory = new TableGateway('test_history',$adapter);
 
 
-        $sql = new Sql($adapter);
-        $select = $sql->select();
-        $select
-                ->from(['q' => 'questions'])
-                ->where(['id_test' => $_GET['id']])
-                ->join(['a' => 'answers'] , 'a.id_question = q.id',array('text_answer','correct','id_t' => 'id'),'left');
-       
+        //$sql = new Sql($adapter);
+        
+        $result = $table->select(function(Select $select){
 
-        $stmt = $sql->prepareStatementForSqlObject($select);
-        $result = $stmt->execute();
+            $select = 
+            $select
+                    ->where(['id_test' => $_GET['id']])
+                    ->join(['a' => 'answers'] , 'a.id_question = questions.id',array('text_answer','correct','id_t' => 'id'),'left');
+           
+        });
+        //$stmt = $sql->prepareStatementForSqlObject($select);
 
         $answer_array = [];
         $question_array = [];
